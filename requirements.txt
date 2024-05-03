@@ -1,0 +1,7 @@
+uvicorn==0.29.0
+python-multipart==0.0.9
+fastapi==0.111.0
+fastapi-cli==0.0.2
+pytesseract==0.3.10
+PyMuPDF==1.24.2
+pillow==10.3.0
