@@ -3,7 +3,9 @@ import pytesseract
 import cv2
 import numpy as np
 import re
+
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+
 
 def preprocess_image(image):
     resized_image = cv2.resize(image, (800, 600))
@@ -13,6 +15,7 @@ def preprocess_image(image):
 
 
 def clean_text(text):
+    #print(f"Before Cleaning {text}")
     cleaned_text = re.sub(r'[^a-zA-Z0-9\s]', '', text).strip()
     return cleaned_text
 
@@ -24,8 +27,10 @@ def extract_text_from_pdf(pdf_path):
     for page_num in range(doc.page_count):
         page = doc.load_page(page_num)
         image_list = page.get_images(full=True)
+        #print(f"image_list = {image_list}")
 
         for img_index, img in enumerate(image_list):
+            #print(f"img = {img[0]}")
             xref = img[0]
             base_image = doc.extract_image(xref)
             image_bytes = base_image["image"]
@@ -34,6 +39,7 @@ def extract_text_from_pdf(pdf_path):
             preprocessed_image = preprocess_image(decoded_image)
             extracted_text = pytesseract.image_to_string(preprocessed_image, lang="eng", config="--psm 6 --oem 3")
             cleaned_text = clean_text(extracted_text)
+            print(f"extracted_text = {extracted_text}")
 
             if img_index == 0:
                 text_data["Pre"].append(cleaned_text)
@@ -43,3 +49,6 @@ def extract_text_from_pdf(pdf_path):
     doc.close()
     return text_data
 
+
+op = extract_text_from_pdf("C:\\Users\\abhij\\PycharmProjects\\TRSImplementation\\TRS_1.pdf")
+print(f"Out = {op}")
