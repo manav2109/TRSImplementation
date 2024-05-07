@@ -1,6 +1,5 @@
 import os
-
-import fitz  # PyMuPDF
+# import fitz  # PyMuPDF
 import pytesseract
 import cv2
 import numpy as np

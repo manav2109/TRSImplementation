@@ -1,7 +1,4 @@
 import pdfplumber
-
-import pdfplumber
-
 from src.objects import pdf_document
 from src.objects import pdf_page
 
@@ -17,7 +14,7 @@ def read_pdf(pdf_path):
         page_count = 0
         for page in pdf.pages:
             page_count += 1
-            pdf_page_obj = pdf_page()
+            pdf_page_obj = pdf_page(page)
             pdf_page_obj.set_page_number(page_count)
 
             # Extract text from each page
