@@ -1,3 +1,5 @@
+import os
+
 import fitz  # PyMuPDF
 import pytesseract
 import cv2
@@ -27,28 +29,30 @@ def extract_text_from_pdf(pdf_path):
     for page_num in range(doc.page_count):
         page = doc.load_page(page_num)
         image_list = page.get_images(full=True)
-        #print(f"image_list = {image_list}")
+        print(f"image_list = {image_list}")
 
-        for img_index, img in enumerate(image_list):
-            #print(f"img = {img[0]}")
-            xref = img[0]
-            base_image = doc.extract_image(xref)
-            image_bytes = base_image["image"]
-            image_np = np.frombuffer(image_bytes, dtype=np.uint8)
-            decoded_image = cv2.imdecode(image_np, cv2.IMREAD_COLOR)
-            preprocessed_image = preprocess_image(decoded_image)
-            extracted_text = pytesseract.image_to_string(preprocessed_image, lang="eng", config="--psm 6 --oem 3")
-            cleaned_text = clean_text(extracted_text)
-            print(f"extracted_text = {extracted_text}")
+    #     for img_index, img in enumerate(image_list):
+    #         #print(f"img = {img[0]}")
+    #         xref = img[0]
+    #         base_image = doc.extract_image(xref)
+    #         image_bytes = base_image["image"]
+    #         image_np = np.frombuffer(image_bytes, dtype=np.uint8)
+    #         decoded_image = cv2.imdecode(image_np, cv2.IMREAD_COLOR)
+    #         preprocessed_image = preprocess_image(decoded_image)
+    #         extracted_text = pytesseract.image_to_string(preprocessed_image, lang="eng", config="--psm 6 --oem 3")
+    #         cleaned_text = clean_text(extracted_text)
+    #         print(f"extracted_text = {extracted_text}")
+    #
+    #         if img_index == 0:
+    #             text_data["Pre"].append(cleaned_text)
+    #         elif img_index == 1:
+    #             text_data["Post"].append(cleaned_text)
+    #
+    # doc.close()
+    # return text_data
 
-            if img_index == 0:
-                text_data["Pre"].append(cleaned_text)
-            elif img_index == 1:
-                text_data["Post"].append(cleaned_text)
-
-    doc.close()
-    return text_data
-
-
-op = extract_text_from_pdf("C:\\Users\\abhij\\PycharmProjects\\TRSImplementation\\TRS_1.pdf")
+print(f"current_path = {os.getcwd()}")
+trs_pdf_file_path = os.path.join(os.getcwd(), 'TestData', 'SampleTRSSheets', 'GEN_Pdf_TRS_L26118_07082018_132507.pdf')
+print(f"trs_pdf_file_path = {trs_pdf_file_path}")
+op = extract_text_from_pdf(trs_pdf_file_path)
 print(f"Out = {op}")
