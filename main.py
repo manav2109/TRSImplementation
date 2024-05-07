@@ -6,6 +6,8 @@ import cv2
 import numpy as np
 import re
 
+from src.pdf_extraction import read_pdf
+
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 
 
@@ -23,13 +25,20 @@ def clean_text(text):
 
 
 def extract_text_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
-    text_data = {"Pre": [], "Post": []}
+    pdf_doc_obj = read_pdf(pdf_path)
+    pdf_doc_obj.get_page_count()
 
-    for page_num in range(doc.page_count):
-        page = doc.load_page(page_num)
-        image_list = page.get_images(full=True)
-        print(f"image_list = {image_list}")
+    # Loop through each page
+    for page in pdf_doc_obj.get_all_pages():
+        page.image_analysis()
+
+    # doc = fitz.open(pdf_path)
+    # text_data = {"Pre": [], "Post": []}
+    #
+    # for page_num in range(doc.page_count):
+    #     page = doc.load_page(page_num)
+    #     image_list = page.get_images(full=True)
+    #     print(f"image_list = {image_list}")
 
     #     for img_index, img in enumerate(image_list):
     #         #print(f"img = {img[0]}")
@@ -51,8 +60,10 @@ def extract_text_from_pdf(pdf_path):
     # doc.close()
     # return text_data
 
-print(f"current_path = {os.getcwd()}")
+
+# print(f"current_path = {os.getcwd()}")
 trs_pdf_file_path = os.path.join(os.getcwd(), 'TestData', 'SampleTRSSheets', 'GEN_Pdf_TRS_L26118_07082018_132507.pdf')
 print(f"trs_pdf_file_path = {trs_pdf_file_path}")
+
 op = extract_text_from_pdf(trs_pdf_file_path)
 print(f"Out = {op}")
