@@ -157,7 +157,7 @@ class pdf_image(trs_base_object):
         img_path = f"{temp_directory}/page{self.page_number}_snap_image{self.image_index}.jpg"
         screenshot.save(img_path)
 
-    def get_image_text(self):
+    def get_image_text(self, save_images=False):
         image_ind = self.original_image_data[0]
         base_image = self.fitz_doc_obj.extract_image(image_ind)
 
@@ -171,8 +171,8 @@ class pdf_image(trs_base_object):
         original_width, original_height = image.size
 
         # Calculate new width and height
-        new_width = int(original_width * 2)
-        new_height = int(original_height * 2)
+        new_width = int(original_width * 2.0)
+        new_height = int(original_height * 2.0)
 
         # Resize the image
         image = image.resize((new_width, new_height), resample=Resampling.BOX)
@@ -198,9 +198,10 @@ class pdf_image(trs_base_object):
         image.save(img_path)
 
         # Get OCR data
-        data = single_image_to_json(img_path)
-        # print(f"IIIII img_path = {img_path}")
-        print(f"data = {data}")
+        ocr_text_data = single_image_to_json(image,img_path)
+        # print(f"data = {data}")
+
+        return ocr_text_data
 
     # def get_image_text(self):
     #     xref = self.original_image_data[0]
@@ -214,13 +215,13 @@ class pdf_image(trs_base_object):
     #     # print(f"{self.page_number+1}. extracted_text = {extracted_text}")
     #     return cleaned_text
 
-    def preprocess_image(self, image):
-        resized_image = cv2.resize(image, (800, 600))
-        gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
-        _, thresholded_image = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        return thresholded_image
-
-    def clean_text(self, text):
-        # print(f"Before Cleaning {text}")
-        cleaned_text = re.sub(r'[^a-zA-Z0-9\s]', '', text).strip()
-        return cleaned_text
+    # def preprocess_image(self, image):
+    #     resized_image = cv2.resize(image, (800, 600))
+    #     gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
+    #     _, thresholded_image = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    #     return thresholded_image
+    #
+    # def clean_text(self, text):
+    #     # print(f"Before Cleaning {text}")
+    #     cleaned_text = re.sub(r'[^a-zA-Z0-9\s]', '', text).strip()
+    #     return cleaned_text
