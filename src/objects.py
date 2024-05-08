@@ -116,7 +116,7 @@ class pdf_page(trs_base_object):
 
     def page_image_analysis(self):
         for image in self.get_image_data():
-            image.snap_of_image()
+            #image.snap_of_image()
             print(f"Page Number {image.page_number}. Each image = {image} Text = {image.get_image_text()}")
 
 import pyautogui
@@ -132,8 +132,6 @@ class pdf_image(trs_base_object):
 
     def snap_of_image(self):
         # Get the page
-        # page = pdf_document.load_page(page_number - 1)
-
         image_ind = self.original_image_data[0]
         base_image = self.fitz_doc_obj.extract_image(image_ind)
         print(f"base_image = {base_image}")
@@ -144,7 +142,7 @@ class pdf_image(trs_base_object):
                         self.original_image_data[4]) #(rect[0], rect[1], rect[2], rect[3])
 
         # Get the image region coordinates
-        print(f"self.original_image_data = {self.original_image_data}")
+        #print(f"self.original_image_data = {self.original_image_data}")
         x1, y1, x2, y2 = image_region
 
         # Calculate the position and size of the image region
@@ -173,8 +171,8 @@ class pdf_image(trs_base_object):
         original_width, original_height = image.size
 
         # Calculate new width and height
-        new_width = int(original_width * 1.5)
-        new_height = int(original_height * 1.5)
+        new_width = int(original_width * 2)
+        new_height = int(original_height * 2)
 
         # Resize the image
         image = image.resize((new_width, new_height), resample=Resampling.BOX)

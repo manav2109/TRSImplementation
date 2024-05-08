@@ -31,6 +31,7 @@ def read_pdf(pdf_path):
             image_data, fitz_page = pdf_fitz_utility_obj.get_pdf_page_images(page_count)
             # print(f"image_data = {image_data}")
             pdf_page_obj.set_image_data(image_data, pdf_fitz_utility_obj.get_fitz_doc(), fitz_page)
+
             if len(image_data) != len(page.images):
                 print(f"ERROR::Image count on page {page_count} is not matching...{len(image_data), len(page.images)}")
             # images = page.images

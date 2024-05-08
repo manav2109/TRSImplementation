@@ -20,13 +20,13 @@ def single_image_to_json(image_file_path):
     now = datetime.datetime.now()
     start_time = time.time()
 
-    print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} [ INFO ] : Processing OCR Scan {image_file_path}")
+    #print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} [ INFO ] : Processing OCR Scan {image_file_path}")
 
     #file_handle = open(image_file_path, "r")
     # is_image_check = is_image(file.file)
 
     # if is_image_check["status"]:
-    print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} [ INFO ] : Started OCR Scan {image_file_path}")
+    #print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} [ INFO ] : Started OCR Scan {image_file_path}")
     image = Image.open(image_file_path)
 
     # # Enhance brightness
@@ -48,10 +48,11 @@ def single_image_to_json(image_file_path):
 
     if len(text) == 0:
         print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} [ ERROR ] : Finished OCR Scan {image_file_path} : Total duration {str(datetime.timedelta(seconds=time.time() - start_time))}")
-        return {"data": text, "msg": "file parsed empty", "status": False, "duration": {str(datetime.timedelta(seconds=time.time() - start_time))}}
-
-    print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} [ INFO ] : Finished OCR Scan {image_file_path} : Total duration {str(datetime.timedelta(seconds=time.time() - start_time))}")
-    return {"data": text, "msg": "file parsed successfully", "status": True, "duration": {str(datetime.timedelta(seconds=time.time() - start_time))}}
+        #return {"data": text, "msg": "file parsed empty", "status": False, "duration": {str(datetime.timedelta(seconds=time.time() - start_time))}}
+        return text
+    #print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} [ INFO ] : Finished OCR Scan {image_file_path} : Total duration {str(datetime.timedelta(seconds=time.time() - start_time))}")
+    return [line.strip() for line in text.split('\n') if line.strip()] #ext.strip().split('\n')
+    #return {"data": text, "msg": "file parsed successfully", "status": True, "duration": {str(datetime.timedelta(seconds=time.time() - start_time))}}
     # else:
     #     print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} [ ERROR ] : Error OCR Scan {file.filename} : This is not an image")
     #     return {"error": "There is an error in parsing file.", "data": "parsing ERROR", "msg": is_image_check, "status": False}
