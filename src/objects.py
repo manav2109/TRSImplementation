@@ -1,15 +1,7 @@
-import io
 import pprint
-import re
-import tempfile
 
-import cv2
-import numpy as np
-import pytesseract
-from PIL import Image, ImageEnhance
-from PIL.Image import Resampling
-
-from routers.ocr import single_image_to_json
+from routers.nlp import get_purpose_of_the_sentence, extract_intention_v2
+from routers.ocr import single_image_to_json, get_image_ocr_data
 
 
 class trs_base_object(object):
@@ -55,6 +47,18 @@ class pdf_document(trs_base_object):
                 return True
         return False
 
+    def get_purpose_of_the_trs(self):
+        for each_page in self.get_all_pages():
+            # The modification consists in
+            texts = each_page.get_text_data()
+            for each_text in texts:
+                purpose = get_purpose_of_the_sentence(each_text)
+                if purpose and ('Modify' in purpose or 'modification' in purpose):
+                    # intension_of_sentence = extract_intention_v2(each_text)
+                    # print(f"purpose = {purpose} and intension_of_sentence {intension_of_sentence} text {each_text}")
+                    what_change = each_text.split('-')[-1].strip()
+                    return purpose.strip(), what_change.strip()
+
 
 class pdf_page(trs_base_object):
     def __init__(self, original_page_object):
@@ -88,6 +92,7 @@ class pdf_page(trs_base_object):
         self.page_number = num
 
     def get_text_data(self):
+        # Returns array of strings consisting all texts on this page
         return self.text_content
 
     def get_table_data(self):
@@ -116,10 +121,9 @@ class pdf_page(trs_base_object):
 
     def page_image_analysis(self):
         for image in self.get_image_data():
-            #image.snap_of_image()
             print(f"Page Number {image.page_number}. Each image = {image} Text = {image.get_image_text()}")
 
-import pyautogui
+
 class pdf_image(trs_base_object):
     def __init__(self, individual_image, original_page_object, page_number, fitz_doc_obj, image_index, fitz_page):
         super().__init__()
@@ -130,77 +134,8 @@ class pdf_image(trs_base_object):
         self.image_index = image_index
         self.fitz_page = fitz_page
 
-    def snap_of_image(self):
-        # Get the page
-        image_ind = self.original_image_data[0]
-        base_image = self.fitz_doc_obj.extract_image(image_ind)
-        print(f"base_image = {base_image}")
-        #rect = base_image["rect"]
-        image_region = (self.original_image_data[1],
-                        self.original_image_data[2],
-                        self.original_image_data[3],
-                        self.original_image_data[4]) #(rect[0], rect[1], rect[2], rect[3])
-
-        # Get the image region coordinates
-        #print(f"self.original_image_data = {self.original_image_data}")
-        x1, y1, x2, y2 = image_region
-
-        # Calculate the position and size of the image region
-        left, top = x1, y1 # self.original_page_object.rect.x0 + x1, self.original_page_object.rect.y1 - y1
-        width, height = base_image['width'], base_image['height']#x2 - x1, y1 - y2  # y-axis is inverted in PyMuPDF
-
-        # Take a screenshot of the image region
-        screenshot = pyautogui.screenshot(region=(left, top, width, height))
-
-        # Save the screenshot
-        temp_directory = tempfile.gettempdir()
-        img_path = f"{temp_directory}/page{self.page_number}_snap_image{self.image_index}.jpg"
-        screenshot.save(img_path)
-
-    def get_image_text(self, save_images=False):
-        image_ind = self.original_image_data[0]
-        base_image = self.fitz_doc_obj.extract_image(image_ind)
-
-        # Get image data
-        image_bytes = base_image["image"]
-
-        # Convert image data to PIL Image
-        image = Image.open(io.BytesIO(image_bytes))
-
-        # Get original width and height
-        original_width, original_height = image.size
-
-        # Calculate new width and height
-        new_width = int(original_width * 2.0)
-        new_height = int(original_height * 2.0)
-
-        # Resize the image
-        image = image.resize((new_width, new_height), resample=Resampling.BOX)
-
-        # Enhance brightness
-        brightness_factor = 1.2
-        sharpness_factor = 1.5
-        contrast_factor = 1.2
-        enhancer = ImageEnhance.Brightness(image)
-        image = enhancer.enhance(brightness_factor)
-
-        # Enhance sharpness
-        enhancer = ImageEnhance.Sharpness(image)
-        image = enhancer.enhance(sharpness_factor)
-
-        # Enhance contrast
-        enhancer = ImageEnhance.Contrast(image)
-        image = enhancer.enhance(contrast_factor)
-
-        # Save the image as JPG
-        temp_directory = tempfile.gettempdir()
-        img_path = f"{temp_directory}/page{self.page_number}_image{self.image_index}.jpg"
-        image.save(img_path)
-
-        # Get OCR data
-        ocr_text_data = single_image_to_json(image,img_path)
-        # print(f"data = {data}")
-
+    def get_image_text(self):
+        ocr_text_data = get_image_ocr_data(self)
         return ocr_text_data
 
     # def get_image_text(self):
@@ -225,3 +160,5 @@ class pdf_image(trs_base_object):
     #     # print(f"Before Cleaning {text}")
     #     cleaned_text = re.sub(r'[^a-zA-Z0-9\s]', '', text).strip()
     #     return cleaned_text
+
+
