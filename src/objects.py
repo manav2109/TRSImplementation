@@ -1,3 +1,4 @@
+import json
 import pprint
 
 from routers.nlp import get_purpose_of_the_sentence, extract_intention_v2
@@ -43,7 +44,7 @@ class pdf_document(trs_base_object):
 
     def is_trs_document(self):
         for each_page in self.get_all_pages():
-            if 'Technical Repercussion Sheet' in each_page.get_text_data():
+            if 'Technical Repercussion Sheet' in each_page.get_text_data() or 'Sub-Technical Repercussion Sheet' in each_page.get_text_data():
                 return True
         return False
 
@@ -54,10 +55,31 @@ class pdf_document(trs_base_object):
             for each_text in texts:
                 purpose = get_purpose_of_the_sentence(each_text)
                 if purpose and ('Modify' in purpose or 'modification' in purpose):
-                    # intension_of_sentence = extract_intention_v2(each_text)
-                    # print(f"purpose = {purpose} and intension_of_sentence {intension_of_sentence} text {each_text}")
+                    # intention_of_sentence = extract_intention_v2(each_text)
+                    # print(f"purpose = {purpose} and intention_of_sentence {intention_of_sentence} text {each_text}")
                     what_change = each_text.split('-')[-1].strip()
                     return purpose.strip(), what_change.strip()
+
+    def get_ATA(self):
+        for each_page in self.get_all_pages():
+            # The modification consists in
+            for table in each_page.get_table_data():
+                for row in table:
+                    for cell in row:
+                        if cell and cell.find('ATA:') != -1:
+                            return cell.split("ATA:")[1].strip()
+
+    def get_pre_post_mod_description(self):
+        for each_page in self.get_all_pages():
+            # The modification consists in
+            for table in each_page.get_table_data():
+                row_ind = 0
+                for row in table:
+                    if "PRE MOD" in row:
+                        next_row = table[row_ind+1]
+                        print(f"This row = {row} next_row = {next_row}")
+                        return next_row[0].replace('\n', ' - '), next_row[1].replace('\n', ' - ')
+                    row_ind += 1
 
 
 class pdf_page(trs_base_object):
@@ -160,5 +182,20 @@ class pdf_image(trs_base_object):
     #     # print(f"Before Cleaning {text}")
     #     cleaned_text = re.sub(r'[^a-zA-Z0-9\s]', '', text).strip()
     #     return cleaned_text
+
+
+class tred_json(trs_base_object):
+    def __init__(self):
+        super().__init__()
+        self.json = {}
+
+    def add_data(self, k, v):
+        if k not in self.json:
+            self.json[k] = v
+        else:
+            print(f"ERROR::Key {k} already exists in json!")
+
+    def show_output(self):
+        print(json.dumps(self.json, indent=4))
 
 
