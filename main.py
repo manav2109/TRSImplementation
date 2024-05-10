@@ -25,6 +25,17 @@ def extract_text_from_pdf(pdf_path):
     output.add_data('ata_chapter', ata)
     output.add_data('pre_mod_description', pre_mod)
     output.add_data('post_mod_description', post_mod)
+    output.add_data('CI', "")
+    output.add_data('DS', "")
+    output.add_data('ZONE', "")
+    output.add_data('part_number', "")
+    updates_dict = {"part_number": "",
+                    "current_co-ordinates_in_ac": [],
+                    "new_co-ordinates_in_ac": [],
+                    "feature_name": "",
+                    "feature_parameter": "",
+                    "feature_dim": ""}
+    output.add_data('updates', updates_dict)
     print(f"output = {output.show_output()}")
 
     # Loop through each page
