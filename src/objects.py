@@ -198,4 +198,7 @@ class tred_json(trs_base_object):
     def show_output(self):
         print(json.dumps(self.json, indent=4))
 
+    def get_output(self):
+        return self.json
+
 

@@ -1,12 +1,12 @@
 import fitz
 import pdfplumber
+import pytesseract
 
-from src.objects import pdf_document
+from src.objects import pdf_document, tred_json
 from src.objects import pdf_page
 
 
 def read_pdf(pdf_path):
-
     with pdfplumber.open(pdf_path) as pdf:
         pdf_file_obj = pdf_document(pdf_path)
         pdf_fitz_utility_obj = pdf_fitz_utility(pdf_path)
@@ -51,7 +51,7 @@ class pdf_fitz_utility(object):
     def get_pdf_page_images(self, page_number):
         # page_number supplied is starting from 1, so we have to lessen it by 1
         for page_num in range(self.doc.page_count):
-            if page_num == page_number-1:
+            if page_num == page_number - 1:
                 page = self.doc.load_page(page_num)
                 image_list = page.get_images(full=True)
                 return image_list, page
@@ -78,6 +78,58 @@ class pdf_fitz_utility(object):
     #         cleaned_text = clean_text(extracted_text)
     #         print(f"{page_num+1}. extracted_text = {extracted_text}")
 
+
+pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+
+
+def extract_text_from_pdf(pdf_path):
+    pdf_doc_obj = read_pdf(pdf_path)
+    pdf_doc_obj.get_page_count()
+    # print(f"is_trs_document = {pdf_doc_obj.is_trs_document()}")
+    purpose, change = pdf_doc_obj.get_purpose_of_the_trs()
+    ata = pdf_doc_obj.get_ATA()
+    pre_mod, post_mod = pdf_doc_obj.get_pre_post_mod_description()
+    # print(f"get_purpose_of_the_trs = {pdf_doc_obj.get_purpose_of_the_trs()}")
+
+    output = tred_json()
+    output.add_data('is_trs_document', pdf_doc_obj.is_trs_document())
+    output.add_data('purpose', purpose)
+    output.add_data('change', change)
+    output.add_data('ata_chapter', ata)
+    output.add_data('pre_mod_description', pre_mod)
+    output.add_data('post_mod_description', post_mod)
+    output.add_data('CI', "")
+    output.add_data('DS', "")
+    output.add_data('ZONE', "")
+    output.add_data('part_number', "")
+    updates_dict = {"part_number": "",
+                    "current_co-ordinates_in_ac": [],
+                    "new_co-ordinates_in_ac": [],
+                    "feature_name": "",
+                    "feature_parameter": "",
+                    "feature_dim": ""}
+    output.add_data('updates', updates_dict)
+    print(f"output = {output.show_output()}")
+
+    # Loop through each page
+    # for page in pdf_doc_obj.get_all_pages():
+    #     page.page_image_analysis()
+
+    return output
+
+# run_case = 1
+#
+# if run_case == 1:
+#     trs_pdf_file_path = os.path.join(os.getcwd(), 'TestData', 'SampleTRSSheets',
+#                                      'GEN_Pdf_TRS_L26118_07082018_132507.pdf')
+# elif run_case == 2:
+#     trs_pdf_file_path = os.path.join(os.getcwd(), 'TestData', 'SampleTRSSheets',
+#                                      'GEN_Pdf_TRS_L25925_26092018_064958.pdf')
+# else:
+#     trs_pdf_file_path = os.path.join(os.getcwd(), 'TestData', 'SampleTRSSheets',
+#                                      'GEN_Pdf_SubTRS_L90032_XW CEF_30032018_064656.pdf')
+#
+# extract_text_from_pdf(trs_pdf_file_path)
 
 # def preprocess_image(image):
 #     resized_image = cv2.resize(image, (800, 600))

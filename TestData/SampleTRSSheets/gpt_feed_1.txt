@@ -1,0 +1,43 @@
+The document provided is a Sub-Technical Repercussion Sheet for the A350-XWB, detailing the customization of moving the Cabin Temperature Sensor in Zone 5. Here is the summary of the purpose, the description of the modification before and after, and the impact assessment:
+
+Purpose
+
+The purpose of this document is to detail the modification needed to move the Cabin Temperature Sensor from its basic position to an alternative position in Zone 5 of the A350-XWB. This adjustment is required due to customization needs based on specific aircraft layouts.
+
+Description Before and After Modification
+
+Before Modification:
+
+    The Cabin Temperature Sensor (CTS) was originally located above the Lateral Air Outlet (LAO) in the lateral hat rack, which is standard for ensuring accurate temperature readings across the cabin's Zone 5.
+
+After Modification:
+
+    The CTS is relocated to a secondary position based on the cabin layout and hat rack position. This change allows for continued accurate temperature measurement despite alterations in the default sensor positioning due to the installation of cabin monuments or other layout customizations.
+
+Impact Assessment
+
+    Regulatory Impact: The modification does not require additional work to show compliance with the applicable certification basis, which simplifies the approval process.
+    Physical and Mechanical Impact: Includes detailed changes to the sensor's placement and the associated wiring and support structures. The mechanical systems impacted include changes to the air conditioning compartment's air extraction, control, and monitoring.
+    Documentation Impact: No significant changes are needed for critical operational manuals or safety documents, maintaining the current procedures with minor updates where necessary.
+    Weight and Electrical Load Impact: The modification results in a minor net decrease in weight (-0.422 Kg) and no significant impact on electrical loads.
+
+This summary provides a focused overview of the modifications involving the relocation of the Cabin Temperature Sensor on the A350-XWB, highlighting the reasons for the change, the specific alterations made, and the broad implications of these changes.
+
+The document lists several part numbers associated with the modifications made to the Cabin Temperature Sensor system in the A350-XWB. Here are the part numbers mentioned:
+
+    Plug EN4165 12-20 - Part of the sensor fixation details below the Lateral Air Outlet.
+    Plug 1S EN416561D - Mentioned in relation to the removal and addition actions in the mechanical systems impacts section.
+    2756VC001 A - Related to the wire/harness connections for the sensor.
+    7013VC600 A - Original location plug number, which is being removed.
+    7013VC580 A - New location plug number, which is being added.
+
+These parts are involved in the electrical and mechanical modifications necessitated by the relocation of the temperature sensor within the aircraft.
+
+In the provided "Technical Repercussion Sheet" for the A350-XWB, there are several part numbers and associated details mentioned for the modification of harness installations in Door Zone D3 LH FWD (Solution G). Here are the part numbers identified:
+
+    Harness 1809VB 11M
+    Harness 1719VB 1MD
+    Harness 2763VB 11M
+    Harness 2563VB 1MD
+
+These harnesses are part of the modification detailed in the document, involving changes to the electrical systems installation and the overall layout and routing of these components in specific areas of the aircraft. If you need further details or clarification on any other parts or related procedures, feel free to ask!
