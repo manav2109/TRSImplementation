@@ -1,20 +1,37 @@
-#from openai import OpenAI
+import os
 import pdfplumber
-#client = OpenAI(api_key='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')
-
 from openai import OpenAI
-
 from src.objects import tred_json
 
-client = OpenAI(api_key='sk-proj-ydulqKFdkR3u5rBhGhfjT3BlbkFJNfnkn592uDsHJaBdZbb6')
 
+def chat_with_gpt(pdf_text):
+    api_key = os.environ.get("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key)
 
-# Set your OpenAI API key
+    # prompt = f"Q: {question}\nContext: {pdf_text}"
+    # response = client.completions.create(model="gpt-3.5-turbo-instruct", prompt=prompt, max_tokens=150)
+    response = client.chat.completions.create(
+        model="gpt-4",  # Model name, best output
 
-def chat_with_gpt(question, pdf_text):
-    prompt = f"Q: {question}\nContext: {pdf_text}"
-    response = client.completions.create(model="gpt-3.5-turbo-instruct", prompt=prompt, max_tokens=150)
-    return response.choices[0].text.strip()
+        messages=[
+            {
+                "role": "user",
+                "content": pdf_text,  # specify the source
+            },
+            {
+                "engine": "davinci",  # LLM engine, others can be used but this provides great output
+                "role": "user",
+                "content": "Can you summarize the purpose of this document, specify change and the ATA reference, "
+                           "description before and after modifications, impact assessment find part numbers",
+            },
+
+        ],
+        max_tokens=700,  # Increase if you need a more detailed response
+        temperature=0.7  # Adjust for creativity in response; lower for more factual
+    )
+
+    return response.choices[0].message.content
+    # response.choices[0].text.strip()
 
 
 # Example usage:
@@ -56,21 +73,10 @@ def extract_text_from_pdf(pdf_file):
     return text
 
 
-# def generate_response(question, pdf_text):
-#     prompt = f"Q: {question}\nContext: {pdf_text}"
-#     response = openai.Completion.create(
-#         engine="text-davinci-002",  # Choose the appropriate model
-#         prompt=prompt,
-#         max_tokens=150,  # Adjust as needed
-#     )
-
-
 def get_gpt_extract(pdf_path):
     pdf_text = extract_text_from_pdf(pdf_path)
     # print(f"pdf_text = {pdf_text}")
-    gpt_extract = chat_with_gpt("Extract purpose, situation before and after modification and impact assessment "
-                                "Also extract part numbers.",
-                                pdf_text)
+    gpt_extract = chat_with_gpt(pdf_text)
     print(f"gpt_extract = {gpt_extract}")
 
     # extract_path = r'C:\Users\abhij\PycharmProjects\TRSImplementation\TestData\SampleTRSSheets\gpt_feed_1.txt'
