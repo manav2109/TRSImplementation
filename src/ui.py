@@ -32,6 +32,7 @@ class trs_ui(object):
             self.label.config(text="Selected file: " + filename)
         else:
             self.label.config(text="No file selected.")
+
         # Treat the pdf
         # data = extract_text_from_pdf(filename)
         data = get_gpt_extract(filename)

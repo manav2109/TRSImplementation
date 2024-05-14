@@ -3,6 +3,7 @@ import pprint
 
 from routers.nlp import get_purpose_of_the_sentence, extract_intention_v2
 from routers.ocr import single_image_to_json, get_image_ocr_data
+from src.utils import flatten_array
 
 
 class trs_base_object(object):
@@ -37,6 +38,17 @@ class pdf_document(trs_base_object):
 
     def get_all_pages(self):
         return self.pages
+
+    def get_all_text_data(self):
+        # This includes any ocr data on the individual page
+        res = []
+        for page in self.get_all_pages():
+            data = page.get_text_and_ocr_data()
+            # print(f"data = {data}")
+            res.append(data)
+        # Flatten the array
+        res = flatten_array(res)
+        return '\n'.join(res)
 
     def get_page_count(self):
         print(f"Total page count of PDF {self.path} is {len(self.pages)}")
@@ -116,6 +128,18 @@ class pdf_page(trs_base_object):
     def get_text_data(self):
         # Returns array of strings consisting all texts on this page
         return self.text_content
+
+    def get_text_and_ocr_data(self):
+        image_ocr = []
+        # Collect all image text
+        for image in self.get_image_data():
+            each_ocr_list = image.get_image_text()
+            each_ocr_str = ' '.join(each_ocr_list)
+            # print(f"each_ocr_str = {each_ocr_str}")
+            image_ocr.append(each_ocr_str)
+
+        return self.text_content + image_ocr
+
 
     def get_table_data(self):
         return self.table_content

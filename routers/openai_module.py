@@ -1,7 +1,8 @@
 import os
 import pdfplumber
 from openai import OpenAI
-from src.objects import tred_json
+from src.objects import tred_json, pdf_document
+from src.pdf_extraction import read_pdf
 
 
 def chat_with_gpt(pdf_text):
@@ -21,8 +22,22 @@ def chat_with_gpt(pdf_text):
             {
                 "engine": "davinci",  # LLM engine, others can be used but this provides great output
                 "role": "user",
-                "content": "Can you summarize the purpose of this document, specify change and the ATA reference, "
-                           "description before and after modifications, impact assessment find part numbers",
+                "content": "Get following information from the data provided:"
+                           "Purpose:"
+                           "Reason:"
+                           "Modification:"
+                           "Aircraft Name:"
+                           "Before Change:"
+                           "After Change:"
+                           "Proposed Change:"
+                           "Impact Assessment:"
+                           "Impact on or Impacts on:"
+                           "Repercussions:"
+                           "ATA:"
+                           "Pre Mod or Pre-Mod or Pre Modification or Pre-Modification:"
+                           "Post Mod or Post-Mod or Post Modification or Post-Modification:"
+                           "Changes in quantity of clamps, nuts & other loose items:"
+                           "Part Numbers in comma separated format:",
             },
 
         ],
@@ -74,33 +89,47 @@ def extract_text_from_pdf(pdf_file):
 
 
 def get_gpt_extract(pdf_path):
-    pdf_text = extract_text_from_pdf(pdf_path)
+    # pdf_text = extract_text_from_pdf(pdf_path)
+    pdf_doc = read_pdf(pdf_path)
+    pdf_text = pdf_doc.get_all_text_data()
+    # print(f"pdf_text = {pdf_text}")
+
     # print(f"pdf_text = {pdf_text}")
     gpt_extract = chat_with_gpt(pdf_text)
-    print(f"gpt_extract = {gpt_extract}")
+    # print(f"gpt_extract = {gpt_extract}")
+    gpt_extract_as_arr = gpt_extract.split('\n')
+
+    output = tred_json()
+    for each_line in gpt_extract_as_arr:
+        in_arr = each_line.split(':')
+        key = in_arr[0].strip()
+        val = in_arr[1].strip()
+        output.add_data(key, val)
+
+    return output
 
     # extract_path = r'C:\Users\abhij\PycharmProjects\TRSImplementation\TestData\SampleTRSSheets\gpt_feed_1.txt'
-    split_tags = ['Purpose:', 'Situation before modification:', 'Situation after modification:']
+    # split_tags = ['Purpose:', 'Situation before modification:', 'Situation after modification:']
     # gpt_extract = read_file_as_string(extract_path)
     # print(f"file_content = {file_content}")
 
-    tag_count = 0
-    output = tred_json()
-    for each_tag in split_tags:
-        if tag_count < len(split_tags) - 1:
-            next_tag = split_tags[tag_count + 1]
-            res = split_string_by_endpoints(gpt_extract, each_tag, next_tag)
-            print(f"res = {res}")
-            if res:
-                if contains_colon_and_newline_with_same_count(res):
-                    arr = res.split('\n')
-                    dict = {}
-                    for each_line in arr:
-                        in_arr = each_line.split(':')
-                        dict[in_arr[0].strip()] = in_arr[1].strip()
-                    output.add_data(each_tag, dict)
-                else:
-                    output.add_data(each_tag, res)
-        tag_count += 1
-
-    return output
+    # tag_count = 0
+    # output = tred_json()
+    # for each_tag in split_tags:
+    #     if tag_count < len(split_tags) - 1:
+    #         next_tag = split_tags[tag_count + 1]
+    #         res = split_string_by_endpoints(gpt_extract, each_tag, next_tag)
+    #         print(f"res = {res}")
+    #         if res:
+    #             if contains_colon_and_newline_with_same_count(res):
+    #                 arr = res.split('\n')
+    #                 dict = {}
+    #                 for each_line in arr:
+    #                     in_arr = each_line.split(':')
+    #                     dict[in_arr[0].strip()] = in_arr[1].strip()
+    #                 output.add_data(each_tag, dict)
+    #             else:
+    #                 output.add_data(each_tag, res)
+    #     tag_count += 1
+    #
+    # return output
