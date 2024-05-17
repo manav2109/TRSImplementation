@@ -41,8 +41,6 @@ class trs_ui(object):
         return filename
 
     def set_text_data(self, data):
-        self.text_box.delete('1.0', tk.END)  # Clear existing text
-        #self.text_box.insert(tk.END, data)
         beautified_json = json.dumps(data.get_output(), indent=4)
         # Display the beautified JSON in the Text widget
         self.text_box.delete("1.0", tk.END)  # Clear existing text
