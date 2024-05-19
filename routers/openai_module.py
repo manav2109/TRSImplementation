@@ -138,8 +138,8 @@ def get_gpt_extract(pdf_path):
             if (key == 'Part Numbers in comma separated format' or key == 'VB Numbers' or
                     key == 'Changes in quantity of clamps, nuts & other loose items'):
                 if key == 'Part Numbers in comma separated format':
-                    key = 'Affected CIs'
-                elif key == 'VB':
+                    key = 'Affected Part Numbers'
+                elif key == 'VB with suffix and prefix':
                     key = 'Affected VBs'
                 elif key == 'Changes in quantity of clamps, nuts & other loose items':
                     key = 'Quantity Changes'
