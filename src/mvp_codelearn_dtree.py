@@ -38,9 +38,6 @@ print(df_part.iloc[:,0])
 print(df_part.iloc[:,1])
 print(df_part.shape)
 
-# path3 = "/content/drive/MyDrive/MVP/Airbus_Part_numbersML.csv"  #save file
-# df_part.to_csv(path3, index=False)
-
 """Feature Extraction Function"""
 
 def extract_features(string):
@@ -61,7 +58,7 @@ df_features = df_part['Code'].apply(lambda x: pd.Series(extract_features(x)))
 path4 = "/content/drive/MyDrive/MVP/Airbus_Part_numbers_Features.csv"  #save file
 df_features.to_csv(path4)
 
-X = df_features  # Features
+X = df_features  # Features, note it is to be trained against extracted features
 y = df_part['part_class']  # Target class labels
 
 """## Part (b)
@@ -91,25 +88,20 @@ print(Xtr.shape,Xtest.shape)
 """## Part (c)
 Use library, and test against training data.
 
-Check whether your predictions are the same as the predictions from `KNeighborsClassifier`.
-"""
-
 DT = DecisionTreeClassifier(max_depth=5)
-DT.fit(Xtr, ytr)
+DT.fit(Xtr, ytr)   #Fit training data
 
-y_pred_DT = DT.predict(Xtest)
+y_pred_DT = DT.predict(Xtest)    #predict against test data
 
 print("DT_knn_test =", accuracy_score(y_pred_DT, ytest))  #accuracy score
 #print(list(zip(Xtest, y_pred_DT)))
-print(ytest)
+#print(ytest)
 print(y_pred_DT)
-print(len(y_pred_DT))
+#print(len(y_pred_DT))
 
-y_prob = DT.predict_proba(Xtest)
-print(np.max(y_prob, axis=1), y_pred_DT)
-print(ytest[0:67])
 
-new_strings = pd.Series(['8817VB 95M', 'W9296S000', 'V92369097810-BS99', 'V923690810-BS11'])
+# predict against new data
+new_strings = pd.Series(['8817VB 95M', 'W9296S000', 'V92369097810-BS99', 'V923690810-BS11']) #you can change and test against random set
 new_features = new_strings.apply(lambda x: pd.Series(extract_features(x)))
 new_pred = DT.predict(new_features)
 print(list(zip(new_strings, new_pred)))
