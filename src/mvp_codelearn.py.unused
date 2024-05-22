@@ -9,6 +9,7 @@ Original file is located at
 ## Part (a)
 Import the data and save the data into a variable `X` and the targets into a variable `Y`.
 """
+import os
 
 # Commented out IPython magic to ensure Python compatibility.
 # Import suitable packages, load the dataset, and save data and targets into variables X and Y
@@ -27,9 +28,11 @@ from sklearn.metrics import accuracy_score
 """
 
 #path1 = "/content/drive/MyDrive/MVP/MVPdata1.json"
-path2 = "/content/drive/MyDrive/MVP/Airbus_Part_numbersML.csv"
-from google.colab import drive
-drive.mount('/content/drive')
+current_directory = os.getcwd()
+path2 = os.path.join(current_directory, "TestData", "SampleTRSSheets", "Airbus_Part_numbersML.csv")
+
+# from google.colab import drive
+# drive.mount('/content/drive')
 
 # df_part = pd.read_csv(path2)
 # df_part = pd.read_csv(path2, header=None, names=['Column1'])
@@ -88,6 +91,7 @@ Use library, and test against training data.
 """
 
 from sklearn.neighbors import KNeighborsClassifier   # Import KNeighborClassifier
+
 knn = KNeighborsClassifier (n_neighbors=5)     # Instantiate the classifier with 3 neighbors
 knn.fit(Xtr,ytr)        # Fit the classifier on the training data
 ypred_knn_tr = knn.predict(Xtr)        #Make a prediction on the training data

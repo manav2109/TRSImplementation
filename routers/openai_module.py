@@ -1,6 +1,10 @@
 import os
+import statistics
+
 import pdfplumber
 from openai import OpenAI
+
+from src.mvp_codelearn_dtree import train_ml_model_for_airbus_part_numbers, predict_airbus_part_number
 from src.objects import tred_json, pdf_document
 from src.pdf_extraction import read_pdf
 
@@ -41,7 +45,7 @@ def chat_with_gpt(pdf_text, seed):
                            "ATA:"
                            "Pre Mod or Pre-Mod or Pre Modification or Pre-Modification:"
                            "Post Mod or Post-Mod or Post Modification or Post-Modification:"
-                           "Changes in quantity of clamps, nuts & other loose items:"
+                           "Changes in quantity:"
                            "VB with suffix and prefix:"
                            "Part Numbers in comma separated format:",
             },
@@ -112,6 +116,26 @@ def string_to_integer_sum_alphabet(string):
     return int(total)
 
 
+def check_part_number(part_number_array):
+    current_directory = os.getcwd()
+    model_path = os.path.join(current_directory, "routers", "decision_tree_model.joblib")
+
+    if not os.path.exists(model_path):
+        # Trained ML model is not yet created so create it
+        print(f"Creating and training ML model with supervised learning...")
+        train_ml_model_for_airbus_part_numbers()
+
+    # print(f"part_number_array = {part_number_array}")
+    predictions = predict_airbus_part_number(part_number_array)
+
+    res = statistics.fmean(predictions)
+    print(f"part number prediction = {res}")
+    if res > 0.6:
+        return True
+    else:
+        return False
+
+
 def get_gpt_extract(pdf_path):
     # pdf_text = extract_text_from_pdf(pdf_path)
     pdf_doc = read_pdf(pdf_path)
@@ -123,7 +147,7 @@ def get_gpt_extract(pdf_path):
     # parameter specifies a random seed value that controls the randomization process used by the model.Providing the
     # same seed value for the same input data ensures deterministic behavior, resulting in consistent responses.
     seed_val = string_to_integer_sum_alphabet(os.path.basename(pdf_path))
-    print(f"seed val is {seed_val} for file {os.path.basename(pdf_path)}")
+    # print(f"seed val is {seed_val} for file {os.path.basename(pdf_path)}")
     gpt_extract = chat_with_gpt(pdf_text, seed_val)
     print(f"gpt_extract = {gpt_extract}")
     gpt_extract_as_arr = gpt_extract.split('\n')
@@ -134,21 +158,35 @@ def get_gpt_extract(pdf_path):
         if len(in_arr) > 1:
             key = in_arr[0].strip()
             val = in_arr[1].strip()
+            split_val = val.split(',')
+            split_val = [s.strip() for s in split_val]
 
-            if (key == 'Part Numbers in comma separated format' or key == 'VB Numbers' or
-                    key == 'Changes in quantity of clamps, nuts & other loose items'):
+            if (key == 'Part Numbers in comma separated format' or key == 'VB with suffix and prefix' or
+                    key == 'Changes in quantity'):
                 if key == 'Part Numbers in comma separated format':
                     key = 'Affected Part Numbers'
+                    # print(f"Part numbers == {split_val}")
+                    is_valid_part_numbers = check_part_number(split_val)
+                    if is_valid_part_numbers:
+                        print(f"All Airbus Part numbers are valid!!!!!!!!!!")
+                        output.add_data(key, split_val)
+                    else:
+                        print(f"Invalid Airbus part numbers in {split_val}")
                 elif key == 'VB with suffix and prefix':
                     key = 'Affected VBs'
-                elif key == 'Changes in quantity of clamps, nuts & other loose items':
+                    # print(f"Affected VBs == {split_val}")
+                    is_valid_part_numbers = check_part_number(split_val)
+                    if is_valid_part_numbers:
+                        print(f"All Airbus Part numbers are valid!!!!!!!!!!")
+                        output.add_data(key, split_val)
+                    else:
+                        print(f"Invalid Airbus part numbers in {split_val}")
+                elif key == 'Changes in quantity':
                     key = 'Quantity Changes'
-
-                split_val = val.split(',')
-                output.add_data(key, split_val)
+                    output.add_data(key, split_val)
             else:
                 output.add_data(key, val)
-        else:
+        elif each_line:
             print(f"WARNING::Line {each_line} can not be split!")
 
     return output

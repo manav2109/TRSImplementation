@@ -3,7 +3,7 @@ import pprint
 
 from routers.nlp import get_purpose_of_the_sentence, extract_intention_v2
 from routers.ocr import single_image_to_json, get_image_ocr_data
-from src.utils import flatten_array
+from src.utils import flatten_array, perform_spell_correction
 
 
 class trs_base_object(object):
@@ -134,6 +134,9 @@ class pdf_page(trs_base_object):
         # Collect all image text
         for image in self.get_image_data():
             each_ocr_list = image.get_image_text()
+            # print(f"Original each_ocr_list {each_ocr_list}")
+            each_ocr_list = perform_spell_correction(each_ocr_list)
+            # print(f"each_ocr_list = {each_ocr_list}")
             each_ocr_str = ' '.join(each_ocr_list)
             # print(f"each_ocr_str = {each_ocr_str}")
             image_ocr.append(each_ocr_str)

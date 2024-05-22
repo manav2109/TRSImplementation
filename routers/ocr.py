@@ -60,13 +60,13 @@ def get_image_ocr_data(image_object):
     temp_directory = tempfile.gettempdir()
     img_path = f"{temp_directory}/page{image_object.page_number}_image{image_object.image_index}.jpg"
     image.save(img_path, dpi=(300, 300))
-    print(f"img_path = {img_path}")
+    # print(f"img_path = {img_path}")
     image.close()
 
     # Get OCR data
     # img_path = image_enhancement_for_ocr(image_object)
     ocr_text_data = single_image_to_json(img_path)
-    print(f"ocr_text_data = {ocr_text_data}")
+    # print(f"ocr_text_data = {ocr_text_data}")
     return ocr_text_data
 
 
