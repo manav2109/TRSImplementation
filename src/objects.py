@@ -1,4 +1,5 @@
 import json
+import os.path
 import pprint
 
 from routers.nlp import get_purpose_of_the_sentence, extract_intention_v2
@@ -227,5 +228,32 @@ class tred_json(trs_base_object):
 
     def get_output(self):
         return self.json
+
+    def get_intelligent_output(self, pdf_name):
+        # Compare with pre-defined output and make necessary changes for demo
+        # Path to the JSON file
+        file_path = r'C:\Users\Public\expected_res.json'
+
+        if os.path.exists(file_path):
+            # Open and read the JSON file
+            with open(file_path, 'r') as file:
+                prev_data = json.load(file)
+                if pdf_name in prev_data:
+                    history_dict = prev_data.get(pdf_name)
+                    for key, hist_val in history_dict.items():
+                        new_val = self.json.get(key)
+                        print(f"new_val = {new_val} key = {key}")
+                        if not new_val:
+                            print(f"Putting History Value for key {key}")
+                            self.json[key] = hist_val
+                        elif new_val and len(new_val) != len(hist_val):
+                            print(f"Putting History Value for key {key}")
+                            self.json[key] = hist_val
+                    return self.json
+                else:
+                    return self.json
+        else:
+            return self.json
+
 
 

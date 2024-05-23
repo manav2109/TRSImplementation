@@ -190,7 +190,7 @@ def get_gpt_extract(pdf_path):
         elif each_line:
             print(f"WARNING::Line {each_line} can not be split!")
 
-    return output
+    return output.get_intelligent_output(os.path.basename(pdf_path))
 
     # extract_path = r'C:\Users\abhij\PycharmProjects\TRSImplementation\TestData\SampleTRSSheets\gpt_feed_1.txt'
     # split_tags = ['Purpose:', 'Situation before modification:', 'Situation after modification:']
