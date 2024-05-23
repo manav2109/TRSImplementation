@@ -105,6 +105,7 @@ class pdf_page(trs_base_object):
         self.image_content = []
         self.image_objects_list = []
         self.page_number = None
+        self.page_category = None
 
     def set_text_data(self, text_data):
         # Array data of all texts on the page
@@ -246,7 +247,7 @@ class tred_json(trs_base_object):
                         if not new_val:
                             print(f"Putting History Value for key {key}")
                             self.json[key] = hist_val
-                        elif new_val and len(new_val) != len(hist_val):
+                        elif new_val and len(new_val) < len(hist_val):
                             print(f"Putting History Value for key {key}")
                             self.json[key] = hist_val
                     return self.json

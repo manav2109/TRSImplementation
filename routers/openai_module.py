@@ -183,7 +183,7 @@ def get_gpt_extract(pdf_path):
                     else:
                         print(f"Invalid Airbus part numbers in {split_val}")
                 elif key == 'Changes in quantity':
-                    key = 'Quantity Changes'
+                    key = 'Quantitative Changes'
                     output.add_data(key, split_val)
             else:
                 output.add_data(key, val)
