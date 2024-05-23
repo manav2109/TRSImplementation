@@ -1,3 +1,4 @@
+import math
 import os
 import statistics
 
@@ -130,7 +131,7 @@ def check_part_number(part_number_array):
 
     res = statistics.fmean(predictions)
     print(f"part number prediction = {res}")
-    if res > 0.6:
+    if res > 0.6 or math.isnan(res):
         return True
     else:
         return False
