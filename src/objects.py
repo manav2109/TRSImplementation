@@ -170,6 +170,7 @@ class pdf_page(trs_base_object):
             # print(f"each_ocr_str = {each_ocr_str}")
             image_ocr.append(each_ocr_str)
 
+        # Add sample parts name
         if self.ADD_SAMPLE_DATA:
             if self.pdf_name == 'GEN_Pdf_TRS_L26118_07082018_132507.pdf':
                 image_ocr.append('7007VC640-A')
