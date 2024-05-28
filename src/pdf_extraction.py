@@ -1,3 +1,5 @@
+import os
+
 import fitz
 import pdfplumber
 import pytesseract
@@ -5,17 +7,47 @@ import pytesseract
 from src.objects import pdf_document, tred_json
 from src.objects import pdf_page
 
+page_categories = {
+    "GEN_Pdf_TRS_L26118_07082018_132507.pdf": {
+        "Introduction": [1],
+        "Authors": [2],
+        "General Description": [3, 4, 5],
+        "Changes": [6, 7, 8],
+        "Repercussions": [10, 11],
+        "Part Numbers": [12, 13]
+    },
+    "GEN_Pdf_TRS_L25925_26092018_064958.pdf": {
+        "Introduction": [1],
+        "Authors": [2],
+        "General Description": [3, 4],
+        "Changes": [5, 6, 7, 8, 9],
+        "Repercussions": [10, 11],
+        "Part Numbers": [12, 13]
+    },
+    "GEN_Pdf_SubTRS_L90032_XW CEF_30032018_064656.pdf": {
+        "Introduction": [1],
+        "Authors": [2],
+        "General Description": [3, 4, 5],
+        "Changes": [6, 7, 8, 9, 10, 11],
+        "Repercussions": [13, 14],
+        "Part Numbers": [15, 16]
+    },
+}
+
 
 def read_pdf(pdf_path):
     with pdfplumber.open(pdf_path) as pdf:
+        pdf_name = os.path.basename(pdf_path)
         pdf_file_obj = pdf_document(pdf_path)
         pdf_fitz_utility_obj = pdf_fitz_utility(pdf_path)
 
         page_count = 0
         for page in pdf.pages:
             page_count += 1
-            pdf_page_obj = pdf_page(page)
+            pdf_page_obj = pdf_page(page, pdf_name)
             pdf_page_obj.set_page_number(page_count)
+            # Set page category. Hard coded for certain files for now
+            pdf_page_obj.set_page_category(pdf_name, page_categories)
 
             # Extract text from each page
             pdf_page_obj.set_text_data(page.extract_text())

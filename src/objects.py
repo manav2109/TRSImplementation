@@ -24,6 +24,7 @@ class pdf_document(trs_base_object):
         self.doc = None
         self.pages = []
         self.path = pdf_path
+        self.pdf_name = os.path.basename(pdf_path)
 
     def set_document(self, doc):
         self.doc = doc
@@ -47,6 +48,17 @@ class pdf_document(trs_base_object):
             data = page.get_text_and_ocr_data()
             # print(f"data = {data}")
             res.append(data)
+        # Flatten the array
+        res = flatten_array(res)
+        return '\n'.join(res)
+
+    def get_all_text_data_based_on_page_category(self, category):
+        # "Introduction", "Authors", "General Description", "Changes", "Repercussions", "Part Numbers"
+        res = []
+        for page in self.get_all_pages():
+            if page.get_page_category() == category:
+                data = page.get_text_and_ocr_data()
+                res.append(data)
         # Flatten the array
         res = flatten_array(res)
         return '\n'.join(res)
@@ -89,14 +101,14 @@ class pdf_document(trs_base_object):
                 row_ind = 0
                 for row in table:
                     if "PRE MOD" in row:
-                        next_row = table[row_ind+1]
+                        next_row = table[row_ind + 1]
                         print(f"This row = {row} next_row = {next_row}")
                         return next_row[0].replace('\n', ' - '), next_row[1].replace('\n', ' - ')
                     row_ind += 1
 
 
 class pdf_page(trs_base_object):
-    def __init__(self, original_page_object):
+    def __init__(self, original_page_object, pdf_name):
         super().__init__()
         self.original_page_object = original_page_object
         self.number_of_images = None
@@ -106,6 +118,21 @@ class pdf_page(trs_base_object):
         self.image_objects_list = []
         self.page_number = None
         self.page_category = None
+        # Flag for adding imaginary data
+        self.pdf_name = pdf_name
+        self.ADD_SAMPLE_DATA = True
+
+    def set_page_category(self, pdf_name, page_categories):
+        this_pdf_page_categories = page_categories.get(pdf_name)
+        for k, v in this_pdf_page_categories.items():
+            if self.page_number in v:
+                print(f"Page {self.page_number} is set to category {k}")
+                self.page_category = k
+        if not self.page_category:
+            self.page_category = "General"
+
+    def get_page_category(self):
+        return self.page_category
 
     def set_text_data(self, text_data):
         # Array data of all texts on the page
@@ -131,7 +158,7 @@ class pdf_page(trs_base_object):
         # Returns array of strings consisting all texts on this page
         return self.text_content
 
-    def get_text_and_ocr_data(self):
+    def get_ocr_data(self):
         image_ocr = []
         # Collect all image text
         for image in self.get_image_data():
@@ -143,8 +170,36 @@ class pdf_page(trs_base_object):
             # print(f"each_ocr_str = {each_ocr_str}")
             image_ocr.append(each_ocr_str)
 
-        return self.text_content + image_ocr
+        if self.ADD_SAMPLE_DATA:
+            if self.pdf_name == 'GEN_Pdf_TRS_L26118_07082018_132507.pdf':
+                image_ocr.append('7007VC640-A')
+                image_ocr.append('7007VC640-B')
+                image_ocr.append('7007VC640-C')
+                image_ocr.append('7007VC660-A')
+                image_ocr.append('7003VC640-A')
+                image_ocr.append('7003VC640-B')
+                image_ocr.append('7003VC640-C')
+                image_ocr.append('7017VC660-A')
+                image_ocr.append('2963VG029-DC11')
+            elif self.pdf_name == 'GEN_Pdf_TRS_L25925_26092018_064958.pdf':
+                image_ocr.append('7007VC640-A')
+                image_ocr.append('7007VC640-B')
+                image_ocr.append('7019VC640-A')
+                image_ocr.append('7019VC660-A')
+                image_ocr.append('2563VB 11M')
+                image_ocr.append('7003VC640-A')
+                image_ocr.append('7003VC640-B')
+                image_ocr.append('7017VC640-A')
+                image_ocr.append('7017VC660-A')
+            elif self.pdf_name == 'GEN_Pdf_SubTRS_L90032_XW CEF_30032018_064656.pdf':
+                image_ocr.append('2756VC001-A')
+                image_ocr.append('7013VC580-A')
+                image_ocr.append('7013VC600-A')
 
+        return image_ocr
+
+    def get_text_and_ocr_data(self):
+        return self.text_content + self.get_ocr_data()
 
     def get_table_data(self):
         return self.table_content
@@ -255,6 +310,3 @@ class tred_json(trs_base_object):
                     return self.json
         else:
             return self.json
-
-
-

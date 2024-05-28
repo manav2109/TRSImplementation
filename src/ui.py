@@ -2,8 +2,10 @@ import json
 import tkinter as tk
 from tkinter import filedialog
 
-from routers.openai_module import get_gpt_extract
-from src.pdf_extraction import extract_text_from_pdf
+from routers.openai_module import get_gpt_extract, get_category_based_gpt_extract
+# from src.pdf_extraction import extract_text_from_pdf
+
+PAGE_CATEGORY_BASED_NLP = False
 
 
 class trs_ui(object):
@@ -35,7 +37,10 @@ class trs_ui(object):
 
         # Treat the pdf
         # data = extract_text_from_pdf(filename)
-        data = get_gpt_extract(filename)
+        if PAGE_CATEGORY_BASED_NLP:
+            data = get_category_based_gpt_extract(filename)
+        else:
+            data = get_gpt_extract(filename)
 
         self.set_text_data(data)
         return filename

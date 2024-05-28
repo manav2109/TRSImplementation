@@ -9,6 +9,8 @@ from src.mvp_codelearn_dtree import train_ml_model_for_airbus_part_numbers, pred
 from src.objects import tred_json, pdf_document
 from src.pdf_extraction import read_pdf
 
+USE_GPT_FLAG = True
+
 
 def chat_with_gpt(pdf_text, seed):
     api_key = os.environ.get("OPENAI_API_KEY")
@@ -58,14 +60,55 @@ def chat_with_gpt(pdf_text, seed):
     )
 
     return response.choices[0].message.content
-    # response.choices[0].text.strip()
-    # return response.json()
 
 
-# Example usage:
-# prompt = "Q: What is the meaning of life?"
-# response = chat_with_gpt(prompt)
-# print("A:", response)
+def get_prompt_content_for_category(category):
+    # "Introduction", "Authors", "General Description", "Changes", "Repercussions", "Part Numbers"
+    if category == "Introduction":
+        return "Get Introduction text from supplied data"
+    elif category == "Authors":
+        return "Get Authors Information from supplied data"
+    elif category == "General Description":
+        return "Get General Description from supplied data"
+    elif category == "Changes":
+        return "Get changes or modification information from supplied data"
+    elif category == "Repercussions":
+        return "Get Repercussion information from supplied data. Return results data in key and value format."
+    elif category == "Part Numbers":
+        return ("Get below information from supplied data."
+                "Part Numbers:"
+                "VB numbers with suffix and prefix:")
+
+
+def chat_with_gpt_based_on_category(pdf_text, seed, category):
+    api_key = os.environ.get("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key)
+
+    # To ensure that the OpenAI client.chat.completions.create method gives
+    # consistent answers for the same input data, you need to set the seed parameter in the request.The seed
+    # parameter specifies a random seed value that controls the randomization process used by the model.Providing the
+    # same seed value for the same input data ensures deterministic behavior, resulting in consistent responses.
+    response = client.chat.completions.create(
+        model="gpt-4",  # Model name, best output
+
+        messages=[
+            {
+                "role": "user",
+                "content": pdf_text,  # specify the source
+            },
+            {
+                "engine": "davinci",  # LLM engine, others can be used but this provides great output
+                "role": "user",
+                "content": get_prompt_content_for_category(category),
+            },
+
+        ],
+        max_tokens=700,  # Increase if you need a more detailed response
+        temperature=0.7,  # Adjust for creativity in response; lower for more factual
+        seed=seed
+    )
+
+    return response.choices[0].message.content
 
 
 def read_file_as_string(filepath):
@@ -149,48 +192,117 @@ def get_gpt_extract(pdf_path):
     # same seed value for the same input data ensures deterministic behavior, resulting in consistent responses.
     seed_val = string_to_integer_sum_alphabet(os.path.basename(pdf_path))
     # print(f"seed val is {seed_val} for file {os.path.basename(pdf_path)}")
-    gpt_extract = chat_with_gpt(pdf_text, seed_val)
-    print(f"gpt_extract = {gpt_extract}")
-    gpt_extract_as_arr = gpt_extract.split('\n')
 
-    output = tred_json()
-    for each_line in gpt_extract_as_arr:
-        in_arr = each_line.split(':')
-        if len(in_arr) > 1:
-            key = in_arr[0].strip()
-            val = in_arr[1].strip()
-            split_val = val.split(',')
-            split_val = [s.strip() for s in split_val]
+    if USE_GPT_FLAG:
+        gpt_extract = chat_with_gpt(pdf_text, seed_val)
+        print(f"gpt_extract = {gpt_extract}")
+        gpt_extract_as_arr = gpt_extract.split('\n')
 
-            if (key == 'Part Numbers in comma separated format' or key == 'VB with suffix and prefix' or
-                    key == 'Changes in quantity'):
-                if key == 'Part Numbers in comma separated format':
-                    key = 'Affected Part Numbers'
-                    # print(f"Part numbers == {split_val}")
-                    is_valid_part_numbers = check_part_number(split_val)
-                    if is_valid_part_numbers:
-                        print(f"All Airbus Part numbers are valid!!!!!!!!!!")
+        output = tred_json()
+        for each_line in gpt_extract_as_arr:
+            in_arr = each_line.split(':')
+            if len(in_arr) > 1:
+                key = in_arr[0].strip()
+                val = in_arr[1].strip()
+                split_val = val.split(',')
+                split_val = [s.strip() for s in split_val]
+
+                if (key == 'Part Numbers in comma separated format' or key == 'VB with suffix and prefix' or
+                        key == 'Changes in quantity'):
+                    if key == 'Part Numbers in comma separated format':
+                        key = 'Affected Part Numbers'
+                        # print(f"Part numbers == {split_val}")
+                        is_valid_part_numbers = check_part_number(split_val)
+                        if is_valid_part_numbers:
+                            print(f"All Airbus Part numbers are valid!!!!!!!!!!")
+                            output.add_data(key, split_val)
+                        else:
+                            print(f"Invalid Airbus part numbers in {split_val}")
+                    elif key == 'VB with suffix and prefix':
+                        key = 'Affected VBs'
+                        # print(f"Affected VBs == {split_val}")
+                        is_valid_part_numbers = check_part_number(split_val)
+                        if is_valid_part_numbers:
+                            print(f"All Airbus Part numbers are valid!!!!!!!!!!")
+                            output.add_data(key, split_val)
+                        else:
+                            print(f"Invalid Airbus part numbers in {split_val}")
+                    elif key == 'Changes in quantity':
+                        key = 'Quantitative Changes'
                         output.add_data(key, split_val)
-                    else:
-                        print(f"Invalid Airbus part numbers in {split_val}")
-                elif key == 'VB with suffix and prefix':
-                    key = 'Affected VBs'
-                    # print(f"Affected VBs == {split_val}")
-                    is_valid_part_numbers = check_part_number(split_val)
-                    if is_valid_part_numbers:
-                        print(f"All Airbus Part numbers are valid!!!!!!!!!!")
-                        output.add_data(key, split_val)
-                    else:
-                        print(f"Invalid Airbus part numbers in {split_val}")
-                elif key == 'Changes in quantity':
-                    key = 'Quantitative Changes'
-                    output.add_data(key, split_val)
-            else:
-                output.add_data(key, val)
-        elif each_line:
-            print(f"WARNING::Line {each_line} can not be split!")
+                else:
+                    output.add_data(key, val)
+            elif each_line:
+                print(f"WARNING::Line {each_line} can not be split!")
 
-    return output.get_intelligent_output(os.path.basename(pdf_path))
+        return output.get_intelligent_output(os.path.basename(pdf_path))
+    else:
+        return {}
+
+
+def get_category_based_gpt_extract(pdf_path):
+    pdf_doc = read_pdf(pdf_path)
+    # Text based on page categories. # "Introduction", "Authors", "General Description", "Changes",
+    # "Repercussions", "Part Numbers"
+    # categories = ["Introduction", "Authors", "General Description", "Changes", "Repercussions", "Part Numbers"]
+    categories = ["Part Numbers"]
+
+    for category in categories:
+        pdf_text = pdf_doc.get_all_text_data_based_on_page_category(category)
+        print(f"category = {category} pdf_text = {pdf_text}")
+
+        # To ensure that the OpenAI client.chat.completions.create method gives consistent answers for the same input
+        # data, you need to set the seed parameter in the request.The seed parameter specifies a random seed value
+        # that controls the randomization process used by the model.Providing the same seed value for the same input
+        # data ensures deterministic behavior, resulting in consistent responses.
+        seed_val = string_to_integer_sum_alphabet(os.path.basename(pdf_path))
+        # print(f"seed val is {seed_val} for file {os.path.basename(pdf_path)}")
+
+        if USE_GPT_FLAG and 1==2:
+            gpt_extract = chat_with_gpt_based_on_category(pdf_text, seed_val, category)
+            print(f"For category {category} gpt_extract is = {gpt_extract}")
+            gpt_extract_as_arr = gpt_extract.split('\n')
+
+            output = tred_json()
+            for each_line in gpt_extract_as_arr:
+                in_arr = each_line.split(':')
+                if len(in_arr) > 1:
+                    key = in_arr[0].strip()
+                    val = in_arr[1].strip()
+                    split_val = val.split(',')
+                    split_val = [s.strip() for s in split_val]
+
+                    if (key == 'Part Numbers in comma separated format' or key == 'VB with suffix and prefix' or
+                            key == 'Changes in quantity'):
+                        if key == 'Part Numbers in comma separated format':
+                            key = 'Affected Part Numbers'
+                            # print(f"Part numbers == {split_val}")
+                            is_valid_part_numbers = check_part_number(split_val)
+                            if is_valid_part_numbers:
+                                print(f"All Airbus Part numbers are valid!!!!!!!!!!")
+                                output.add_data(key, split_val)
+                            else:
+                                print(f"Invalid Airbus part numbers in {split_val}")
+                        elif key == 'VB with suffix and prefix':
+                            key = 'Affected VBs'
+                            # print(f"Affected VBs == {split_val}")
+                            is_valid_part_numbers = check_part_number(split_val)
+                            if is_valid_part_numbers:
+                                print(f"All Airbus Part numbers are valid!!!!!!!!!!")
+                                output.add_data(key, split_val)
+                            else:
+                                print(f"Invalid Airbus part numbers in {split_val}")
+                        elif key == 'Changes in quantity':
+                            key = 'Quantitative Changes'
+                            output.add_data(key, split_val)
+                    else:
+                        output.add_data(key, val)
+                elif each_line:
+                    print(f"WARNING::Line {each_line} can not be split!")
+
+        #     return output.get_intelligent_output(os.path.basename(pdf_path))
+        # else:
+        #     return {}
 
     # extract_path = r'C:\Users\abhij\PycharmProjects\TRSImplementation\TestData\SampleTRSSheets\gpt_feed_1.txt'
     # split_tags = ['Purpose:', 'Situation before modification:', 'Situation after modification:']
