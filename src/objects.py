@@ -298,14 +298,17 @@ class tred_json(trs_base_object):
                 if pdf_name in prev_data:
                     history_dict = prev_data.get(pdf_name)
                     for key, hist_val in history_dict.items():
-                        new_val = self.json.get(key)
-                        print(f"new_val = {new_val} key = {key}")
-                        if not new_val:
-                            print(f"Putting History Value for key {key}")
-                            self.json[key] = hist_val
-                        elif new_val and len(new_val) < len(hist_val):
-                            print(f"Putting History Value for key {key}")
-                            self.json[key] = hist_val
+                        if key not in ['Quantitative Changes', 'Affected VBs']:
+                            continue
+                        self.json[key] = hist_val
+                        # new_val = self.json.get(key)
+                        # print(f"new_val = {new_val} key = {key}")
+                        # if not new_val:
+                        #     # print(f"Putting History Value for key {key}")
+                        #     self.json[key] = hist_val
+                        # elif new_val:#and len(new_val) < len(hist_val):
+                        #     print(f"Putting History Value for key {key} new_val {new_val} hist_val {hist_val}")
+                        #     self.json[key] = new_val.append(hist_val)
                     return self.json
                 else:
                     return self.json
