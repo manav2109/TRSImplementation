@@ -15,7 +15,7 @@ def extract_features(string):
         'pos0_V': string[0] == 'V' if len(string) > 0 else False,
         'pos1_9': string[1:9].isdigit() if len(string) > 9 else False,  # Checks if characters 1 to 8 are digits
         'pos13': string[13] == 'B' if len(string) > 13 else False,
-        'pos14': string[14] == 'S' if len(string) > 13 else False
+        'pos14': string[14] == 'S' if len(string) > 14 else False
     }
 
 
