@@ -193,7 +193,7 @@ def get_gpt_extract(pdf_path):
     seed_val = string_to_integer_sum_alphabet(os.path.basename(pdf_path))
     # print(f"seed val is {seed_val} for file {os.path.basename(pdf_path)}")
 
-    if USE_GPT_FLAG:
+    if USE_GPT_FLAG and 1==2:
         gpt_extract = chat_with_gpt(pdf_text, seed_val)
         print(f"gpt_extract = {gpt_extract}")
         gpt_extract_as_arr = gpt_extract.split('\n')

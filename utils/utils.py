@@ -49,6 +49,7 @@ def transform_image_to_text(image):
             page_text = pytesseract.image_to_string(image)
             text += page_text + "\n\n"
             page += 1
+            print(f"page {page}")
         except Exception as e:
             print(f"{e}")
             break
