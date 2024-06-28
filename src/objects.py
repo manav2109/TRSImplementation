@@ -251,6 +251,9 @@ class pdf_image(trs_base_object):
         ocr_text_data = self.ocr_object.get_image_text()
         return ocr_text_data
 
+    def get_image_name(self):
+        return 'page_' + str(self.page_number) + '_image_' + str(self.image_index)
+
 
 class tred_json(trs_base_object):
     def __init__(self):

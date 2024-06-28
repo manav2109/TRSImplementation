@@ -193,6 +193,17 @@ def get_gpt_extract(pdf_path):
     seed_val = string_to_integer_sum_alphabet(os.path.basename(pdf_path))
     # print(f"seed val is {seed_val} for file {os.path.basename(pdf_path)}")
 
+    # Set the Image Data
+    image_ocr_objects = []
+    for each_page in pdf_doc.get_all_pages():
+        images = each_page.get_image_data()
+        for each_image in images:
+            # print(f"each_image = {each_image.get_image_name()} ocr_object = {each_image.ocr_object}")
+            # img_path = each_image.ocr_object.get_image_with_ocr_boxes()
+            image_ocr_objects.append(each_image.ocr_object)
+
+    return {}, image_ocr_objects
+
     if USE_GPT_FLAG:
         gpt_extract = chat_with_gpt(pdf_text, seed_val)
         print(f"gpt_extract = {gpt_extract}")
@@ -238,6 +249,7 @@ def get_gpt_extract(pdf_path):
         return output.get_intelligent_output(os.path.basename(pdf_path))
     else:
         return {}
+
 
 
 def get_category_based_gpt_extract(pdf_path):

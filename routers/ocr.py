@@ -1,5 +1,7 @@
 import io
+import os
 import tempfile
+from os import path
 
 import cv2
 import easyocr
@@ -65,7 +67,9 @@ def get_image_ocr_data(image_object):
 
     # Save the image as JPG
     temp_directory = tempfile.gettempdir()
-    img_path = f"{temp_directory}/page{image_object.page_number}_image{image_object.image_index}.jpg"
+    print(image_object)
+    img_path = path.join(temp_directory,
+                         image_object.get_image_name() + ".jpg")
     image.save(img_path, dpi=(300, 300))
     print(f"img_path = {img_path}")
     image.close()
@@ -96,6 +100,9 @@ class ocr_utility(object):
         self.image_path = image_path
         self.image = None
         self.image_rgb = None
+
+    def get_image_name(self):
+        return os.path.basename(self.image_path)
 
     def get_image_text(self):
         if self.use_easy_ocr:
@@ -138,6 +145,7 @@ class ocr_utility(object):
             top_left = tuple(map(int, top_left))
             bottom_right = tuple(map(int, bottom_right))
             cv2.rectangle(self.image_rgb, top_left, bottom_right, (0, 255, 0), 2)
+        return self.image_path
 
 
 def set_image_dpi(file_path):
