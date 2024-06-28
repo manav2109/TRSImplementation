@@ -60,7 +60,7 @@ class trs_ui(object):
         if ocr_obj:
             image_path = ocr_obj.get_image_with_ocr_boxes()
             image = Image.open(image_path)
-            image = image.resize((500, 500))  # Resize the image as per your need
+            image = image.resize((700, 900))  # Resize the image as per your need
             tk_image = ImageTk.PhotoImage(image)
             self.image_label.config(image=tk_image)
             self.image_label.image = tk_image

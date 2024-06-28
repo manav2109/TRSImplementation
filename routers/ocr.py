@@ -145,6 +145,7 @@ class ocr_utility(object):
             top_left = tuple(map(int, top_left))
             bottom_right = tuple(map(int, bottom_right))
             cv2.rectangle(self.image_rgb, top_left, bottom_right, (0, 255, 0), 2)
+        success = cv2.imwrite(self.image_path, self.image_rgb)
         return self.image_path
 
 
