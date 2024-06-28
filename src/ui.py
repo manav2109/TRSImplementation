@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import tkinter as tk
 # from tkinter import *
@@ -10,7 +11,6 @@ from routers.openai_module import get_gpt_extract, get_category_based_gpt_extrac
 # from src.pdf_extraction import extract_text_from_pdf
 
 PAGE_CATEGORY_BASED_NLP = False
-
 
 class trs_ui(object):
     def __init__(self):
@@ -34,11 +34,29 @@ class trs_ui(object):
         self.image_sel_dp_label.grid(column=0, row=3, sticky="w", columnspan=1)
 
         # Drop down
-        self.image_options = ['']
+        self.image_options = ["page_1_image_1.jpg",
+                              "page_2_image_1.jpg",
+                              "page_3_image_1.jpg",
+                              "page_3_image_2.jpg",
+                              "page_4_image_1.jpg",
+                              "page_5_image_1.jpg",
+                              "page_5_image_2.jpg",
+                              "page_5_image_3.jpg",
+                              "page_6_image_1.jpg",
+                              "page_6_image_2.jpg",
+                              "page_6_image_3.jpg",
+                              "page_7_image_1.jpg",
+                              "page_7_image_2.jpg",
+                              "page_7_image_3.jpg",
+                              "page_8_image_1.jpg",
+                              "page_9_image_1.jpg",
+                              "page_10_image_1.jpg",
+                              "page_11_image_1.jpg"]
         self.current_image_name = tk.StringVar(self.root)
-        self.current_image_name.set('')
+        self.current_image_name.set(self.image_options[0])
 
-        self.image_sel_dp = tk.OptionMenu(self.root, self.current_image_name, *self.image_options)
+        self.image_sel_dp = tk.OptionMenu(self.root, self.current_image_name, *self.image_options,
+                                          command=self.option_changed)
         self.image_sel_dp.grid(column=1, row=3, sticky="w", columnspan=1)
 
         #self.image_sel_dp = tk.Button(self.root, text="Update", command=self.chage_image)
@@ -47,10 +65,11 @@ class trs_ui(object):
         # Drop down for showing OCR images
         # Create a label to hold the image
         # Load the image using Pillow
-        temp_directory = tempfile.gettempdir()
-        image_path = path.join(temp_directory, "page_1_image_1.jpg")
+        temp_directory = os.getcwd()
+        image_path = path.join(temp_directory, "Images", "Picture1.png")
+        print(f"image_path === {image_path}")
         image = Image.open(image_path)
-        image = image.resize((1000, 1000))
+        image = image.resize((500, 500))
         # Convert the image to a Tkinter-compatible image
         tk_image = ImageTk.PhotoImage(image)
 
@@ -71,30 +90,31 @@ class trs_ui(object):
         # Dict to store image name against the OCR obj
         self.image_vs_ocr_obj_dict = {}
 
-    def option_selected(self, *args):
+    def option_changed(self, event):
         selected_option = self.current_image_name.get()
         print(f"Selected option: {selected_option}")
+        # Add your callback logic here
+        self.chage_image(selected_option)
 
-    def update_options(self, new_options):
-        #self.image_sel_dp.children["menu"].delete(0, "end")
-        for option in new_options:
-            self.image_options.append(option)
-            print(f"Adding option {option}")
-            self.image_sel_dp.children["menu"].add_command(label=option)
+    # def update_options(self, new_options):
+    #     self.image_sel_dp.children["menu"].delete(0, "end")
+    #     self.image_options = []
+    #     for option in new_options:
+    #         image_option(option, self.image_options)
+    #         print(f"Adding option {option}")
+    #         self.image_sel_dp.children["menu"].add_command(label=option, command=self.option_changed(None))#command=lambda opt=option: self.current_image_name.set(opt))
+    #     #self.current_image_name.set(self.image_options[0])
 
-            self.current_image_name.set(option)  # Set the default value
-
-    def chage_image(self):
-        option = self.current_image_name.get()
-        print(f"New image to set is {option}")
+    def chage_image(self, option):
         ocr_obj = self.image_vs_ocr_obj_dict[option]
         image_path = ocr_obj.get_image_with_ocr_boxes()
         image = Image.open(image_path)
         image = image.resize((1000, 1000))
         # Convert the image to a Tkinter-compatible image
         tk_image = ImageTk.PhotoImage(image)
-        self.image_label = Label(self.root, image=tk_image)
+        #self.image_label = Label(self.root, image=tk_image)
         self.image_label.image = tk_image
+        print(f"New image to set is {option} {image_path}")
 
     def browse_file(self):
         # Empty result box
@@ -112,15 +132,14 @@ class trs_ui(object):
             data = get_category_based_gpt_extract(filename)
         else:
             data, image_ocr_objects = get_gpt_extract(filename)
-            arr = []
-
+            #arr = []
             for each_ocr_obj in image_ocr_objects:
                 name = each_ocr_obj.get_image_name()
-                arr.append(name)
+                #arr.append(name)
                 self.image_vs_ocr_obj_dict[name] = each_ocr_obj
 
             # Update the dropdown
-            self.update_options(arr)
+            #self.update_options(arr)
 
 
         self.set_text_data(data)
