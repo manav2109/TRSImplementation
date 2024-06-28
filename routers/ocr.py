@@ -2,6 +2,7 @@ import io
 import tempfile
 
 import cv2
+import easyocr
 import numpy as np
 import pyautogui
 from PIL import Image, ImageEnhance
@@ -10,13 +11,9 @@ from PIL.Image import Resampling
 from utils.utils import transform_image_to_text
 
 
-def single_image_to_json(image_file_path):
-    image = Image.open(image_file_path)
-    text = transform_image_to_text(image)
-    return [line.strip() for line in text.split('\n') if line.strip()]
-
-
 def get_image_ocr_data(image_object):
+    USE_easyOCR = True
+
     # image_object is individual image retrieved using method pdf_fitz_utility->get_pdf_page_images() which is put
     # in class pdf_image
     image_ind = image_object.original_image_data[0]
@@ -61,9 +58,10 @@ def get_image_ocr_data(image_object):
     enhancer = ImageEnhance.Contrast(image)
     image = enhancer.enhance(contrast_factor)
 
-    # Make it black and white
-    color = ImageEnhance.Color(image)
-    image = color.enhance(0.0)
+    if not USE_easyOCR:
+        # Make it black and white
+        color = ImageEnhance.Color(image)
+        image = color.enhance(0.0)
 
     # Save the image as JPG
     temp_directory = tempfile.gettempdir()
@@ -73,11 +71,73 @@ def get_image_ocr_data(image_object):
     image.close()
 
     # Get OCR data
-    # img_path = image_enhancement_for_ocr(image_object)
-    ocr_text_data = single_image_to_json(img_path)
-    print(f"number of text retrieved = {len(ocr_text_data)} for image {img_path}")
-    print(f"ocr_text_data = {ocr_text_data}")
-    return ocr_text_data
+    # if not USE_easyOCR:
+    #     # img_path = image_enhancement_for_ocr(image_object)
+    #     #ocr_text_data = single_image_to_json(img_path)
+    #     #print(f"number of text retrieved = {len(ocr_text_data)} for image {img_path}")
+    #     #print(f"ocr_text_data = {ocr_text_data}")
+    #     ocr_obj = ocr_utility(use_easy_ocr=USE_easyOCR, image_path=img_path)
+    #     return ocr_obj
+    # else:
+    #     ocr_obj = ocr_utility(use_easy_ocr=USE_easyOCR, image_path=img_path)
+    #     #ocr_text_data = ocr_obj.get_image_text(img_path)
+    #     #print(f"number of text retrieved = {len(ocr_text_data)} for image {img_path}")
+    #     #print(f"ocr_text_data = {ocr_text_data}")
+    #     return ocr_obj
+
+    ocr_obj = ocr_utility(use_easy_ocr=USE_easyOCR, image_path=img_path)
+    return ocr_obj
+
+
+class ocr_utility(object):
+    def __init__(self, use_easy_ocr, image_path):
+        self.results = None
+        self.use_easy_ocr = use_easy_ocr
+        self.image_path = image_path
+        self.image = None
+        self.image_rgb = None
+
+    def get_image_text(self):
+        if self.use_easy_ocr:
+            self.get_image_text_easy_ocr()
+        else:
+            self.get_image_text_pytesseract()
+
+    def get_image_text_pytesseract(self, ):
+        self.image = Image.open(self.image_path)
+        text = transform_image_to_text(self.image)
+        return [line.strip() for line in text.split('\n') if line.strip()]
+
+    def get_image_text_easy_ocr(self):
+        # print("In get_image_text_easy_ocr.......")
+        # It is assumed that pre-processing of image is already done like sharpness increase, brightness adjustment etc.
+        # Load the image using OpenCV
+        self.image = cv2.imread(self.image_path)
+
+        # Convert the image to RGB (EasyOCR requires RGB format)
+        self.image_rgb = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+
+        # Initialize EasyOCR reader
+        reader = easyocr.Reader(['en'])  # Specify the languages you need
+
+        # Perform OCR
+        self.results = reader.readtext(self.image_rgb)
+
+        # Print the results
+        texts = []
+        for (bbox, text, prob) in self.results:
+            # print(f'Text: {text}, Probability: {prob:.4f}')
+            texts.append(text)
+        # print(f"Returning {texts}")
+        return texts
+
+    def get_image_with_ocr_boxes(self):
+        for (bbox, text, prob) in self.results:
+            # Draw bounding boxes around detected text
+            (top_left, top_right, bottom_right, bottom_left) = bbox
+            top_left = tuple(map(int, top_left))
+            bottom_right = tuple(map(int, bottom_right))
+            cv2.rectangle(self.image_rgb, top_left, bottom_right, (0, 255, 0), 2)
 
 
 def set_image_dpi(file_path):

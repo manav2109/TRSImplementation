@@ -3,7 +3,7 @@ import os.path
 import pprint
 
 from routers.nlp import get_purpose_of_the_sentence, extract_intention_v2
-from routers.ocr import single_image_to_json, get_image_ocr_data
+from routers.ocr import get_image_ocr_data
 from src.utils import flatten_array, perform_spell_correction
 
 
@@ -124,10 +124,11 @@ class pdf_page(trs_base_object):
 
     def set_page_category(self, pdf_name, page_categories):
         this_pdf_page_categories = page_categories.get(pdf_name)
-        for k, v in this_pdf_page_categories.items():
-            if self.page_number in v:
-                print(f"Page {self.page_number} is set to category {k}")
-                self.page_category = k
+        if this_pdf_page_categories:
+            for k, v in this_pdf_page_categories.items():
+                if self.page_number in v:
+                    print(f"Page {self.page_number} is set to category {k}")
+                    self.page_category = k
         if not self.page_category:
             self.page_category = "General"
 
@@ -163,12 +164,13 @@ class pdf_page(trs_base_object):
         # Collect all image text
         for image in self.get_image_data():
             each_ocr_list = image.get_image_text()
-            # print(f"Original each_ocr_list {each_ocr_list}")
-            each_ocr_list = perform_spell_correction(each_ocr_list)
-            # print(f"each_ocr_list = {each_ocr_list}")
-            each_ocr_str = ' '.join(each_ocr_list)
-            # print(f"each_ocr_str = {each_ocr_str}")
-            image_ocr.append(each_ocr_str)
+            if each_ocr_list:
+                # print(f"Original each_ocr_list {each_ocr_list} {type(image)}")
+                # each_ocr_list = perform_spell_correction(each_ocr_list)
+                # print(f"each_ocr_list = {each_ocr_list}")
+                each_ocr_str = ' '.join(each_ocr_list)
+                # print(f"each_ocr_str = {each_ocr_str}")
+                image_ocr.append(each_ocr_str)
 
         # Add sample parts name
         if self.ADD_SAMPLE_DATA:
@@ -240,33 +242,14 @@ class pdf_image(trs_base_object):
         self.fitz_doc_obj = fitz_doc_obj
         self.image_index = image_index
         self.fitz_page = fitz_page
+        self.ocr_object = None
 
     def get_image_text(self):
-        ocr_text_data = get_image_ocr_data(self)
+        if not self.ocr_object:
+            self.ocr_object = get_image_ocr_data(self)
+            # print(f"self.ocr_object == {self.ocr_object}")
+        ocr_text_data = self.ocr_object.get_image_text()
         return ocr_text_data
-
-    # def get_image_text(self):
-    #     xref = self.original_image_data[0]
-    #     base_image = self.fitz_doc_obj.extract_image(xref)
-    #     image_bytes = base_image["image"]
-    #     image_np = np.frombuffer(image_bytes, dtype=np.uint8)
-    #     decoded_image = cv2.imdecode(image_np, cv2.IMREAD_COLOR)
-    #     preprocessed_image = self.preprocess_image(decoded_image)
-    #     extracted_text = pytesseract.image_to_string(preprocessed_image, lang="eng", config="--psm 6 --oem 3")
-    #     cleaned_text = self.clean_text(extracted_text)
-    #     # print(f"{self.page_number+1}. extracted_text = {extracted_text}")
-    #     return cleaned_text
-
-    # def preprocess_image(self, image):
-    #     resized_image = cv2.resize(image, (800, 600))
-    #     gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
-    #     _, thresholded_image = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    #     return thresholded_image
-    #
-    # def clean_text(self, text):
-    #     # print(f"Before Cleaning {text}")
-    #     cleaned_text = re.sub(r'[^a-zA-Z0-9\s]', '', text).strip()
-    #     return cleaned_text
 
 
 class tred_json(trs_base_object):

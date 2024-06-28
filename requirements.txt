@@ -19,3 +19,5 @@ scikit-learn~=1.4.2
 joblib~=1.4.2
 pandas~=2.2.2
 autocorrect~=2.6.1
+easyocr~=1.7.1
+matplotlib~=3.9.0

@@ -7,12 +7,34 @@ import tempfile
 import joblib
 import pandas as pd
 
-from routers.openai_module import check_part_number
-from src.mvp_codelearn_dtree import extract_features, train_ml_model_for_airbus_part_numbers
+#from routers.openai_module import check_part_number
+#from src.mvp_codelearn_dtree import extract_features, train_ml_model_for_airbus_part_numbers
 
 temp_directory = tempfile.gettempdir()
 print(f"temp_directory = {temp_directory}")
 img_path = f"{temp_directory}/page7_image2.jpg"
+
+import cv2
+import pytesseract
+
+# Configure the path to the Tesseract executable
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Update this path as needed
+
+# Load the image from which you want to extract text
+# image_path = 'path/to/your/image.png'  # Update this path as needed
+image = cv2.imread(img_path)
+
+# Convert the image to grayscale (optional, but improves OCR accuracy)
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Apply thresholding (optional, but can improve OCR accuracy)
+_, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+
+# Use Tesseract to do OCR on the image
+text = pytesseract.image_to_string(thresh, lang='eng')
+
+# Print the extracted text
+print(text)
 
 import pytesseract
 import cv2
