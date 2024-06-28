@@ -1,6 +1,5 @@
 import json
-import os
-from tkinter import filedialog, Label, Tk, Text, StringVar, OptionMenu, Button
+from tkinter import filedialog, Label, Tk, Text, StringVar, OptionMenu, Button, Canvas, Scrollbar, NW
 from routers.openai_module import get_gpt_extract, get_category_based_gpt_extract
 from PIL import Image, ImageTk
 
@@ -10,6 +9,12 @@ class trs_ui(object):
     def __init__(self):
         self.root = Tk()
         self.root.title("TRS AI Exploration")
+
+        # Configure the grid layout to expand properly
+        self.root.columnconfigure(0, weight=1)
+        self.root.columnconfigure(1, weight=1)
+        self.root.rowconfigure(2, weight=1)
+        self.root.rowconfigure(4, weight=1)
 
         # Create a "Browse File" button
         self.browse_button = Button(self.root, text="Browse TRS File", command=self.browse_file)
@@ -21,7 +26,7 @@ class trs_ui(object):
 
         # Text box for showing results
         self.text_box = Text(self.root, wrap="word", font=("Arial", 12))
-        self.text_box.grid(column=0, row=2, sticky="w", columnspan=2)
+        self.text_box.grid(column=0, row=2, sticky="nsew", columnspan=2)
 
         # Label for Drop down
         self.image_sel_dp_label = Label(self.root, text="Select Image")
@@ -30,12 +35,26 @@ class trs_ui(object):
         # Drop down
         self.current_image_name = StringVar(self.root)
         self.current_image_name.set("No images available")  # Default value
-        self.image_sel_dp = OptionMenu(self.root, self.current_image_name, "No images available", command=self.option_changed)
+        self.image_sel_dp = OptionMenu(self.root, self.current_image_name, "No images available",
+                                       command=self.option_changed)
         self.image_sel_dp.grid(column=1, row=3, sticky="w", columnspan=1)
 
-        # Create a label to hold the image
-        self.image_label = Label(self.root)
-        self.image_label.grid(column=0, row=4, sticky="w", columnspan=2)
+        # Canvas for displaying image
+        self.canvas = Canvas(self.root, bg='white')
+        self.canvas.grid(column=0, row=4, sticky="nsew", columnspan=2)
+
+        # Scrollbars
+        self.vbar = Scrollbar(self.root, orient="vertical", command=self.canvas.yview)
+        self.vbar.grid(row=4, column=2, sticky="ns")
+        self.hbar = Scrollbar(self.root, orient="horizontal", command=self.canvas.xview)
+        self.hbar.grid(row=5, column=0, columnspan=2, sticky="ew")
+
+        self.canvas.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
+
+        # Bind mouse events for zoom and pan
+        self.canvas.bind("<ButtonPress-1>", self.pan_start)
+        self.canvas.bind("<B1-Motion>", self.pan_move)
+        self.canvas.bind("<MouseWheel>", self.zoom)
 
         # Define tags for color coding
         self.text_box.tag_config('brace', foreground='purple')
@@ -50,6 +69,11 @@ class trs_ui(object):
         # Dict to store image name against the OCR obj
         self.image_vs_ocr_obj_dict = {}
         self.image_cache = {}
+        self.img = None
+        self.img_id = None
+        self.zoom_factor = 1.0
+        self.pan_start_x = 0
+        self.pan_start_y = 0
 
     def option_changed(self, event=None):
         selected_option = self.current_image_name.get()
@@ -59,12 +83,32 @@ class trs_ui(object):
         ocr_obj = self.image_vs_ocr_obj_dict.get(option)
         if ocr_obj:
             image_path = ocr_obj.get_image_with_ocr_boxes()
-            image = Image.open(image_path)
-            image = image.resize((700, 900))  # Resize the image as per your need
-            tk_image = ImageTk.PhotoImage(image)
-            self.image_label.config(image=tk_image)
-            self.image_label.image = tk_image
-            self.image_cache[option] = tk_image  # Cache the image to prevent it from being garbage collected
+            self.img = Image.open(image_path)
+            self.update_image()
+
+    def update_image(self):
+        if self.img:
+            width, height = self.img.size
+            resized_image = self.img.resize((int(width * self.zoom_factor), int(height * self.zoom_factor)),
+                                            Image.LANCZOS)
+            tk_image = ImageTk.PhotoImage(resized_image)
+            self.canvas.delete("all")
+            self.img_id = self.canvas.create_image(0, 0, anchor=NW, image=tk_image)
+            self.canvas.config(scrollregion=self.canvas.bbox(self.img_id))
+            self.canvas.image = tk_image  # Keep a reference to avoid garbage collection
+
+    def pan_start(self, event):
+        self.canvas.scan_mark(event.x, event.y)
+
+    def pan_move(self, event):
+        self.canvas.scan_dragto(event.x, event.y, gain=1)
+
+    def zoom(self, event):
+        if event.delta > 0:
+            self.zoom_factor *= 1.1
+        elif event.delta < 0:
+            self.zoom_factor /= 1.1
+        self.update_image()
 
     def browse_file(self):
         filename = filedialog.askopenfilename()
