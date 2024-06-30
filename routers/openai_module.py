@@ -9,7 +9,7 @@ from src.mvp_codelearn_dtree import train_ml_model_for_airbus_part_numbers, pred
 from src.objects import tred_json, pdf_document
 from src.pdf_extraction import read_pdf
 
-USE_GPT_FLAG = False
+USE_GPT_FLAG = True
 
 
 def chat_with_gpt(pdf_text, seed):
@@ -202,7 +202,7 @@ def get_gpt_extract(pdf_path):
             # img_path = each_image.ocr_object.get_image_with_ocr_boxes()
             image_ocr_objects.append(each_image.ocr_object)
 
-    return {}, image_ocr_objects
+    #return {}, image_ocr_objects
 
     if USE_GPT_FLAG:
         gpt_extract = chat_with_gpt(pdf_text, seed_val)
@@ -246,9 +246,9 @@ def get_gpt_extract(pdf_path):
             elif each_line:
                 print(f"WARNING::Line {each_line} can not be split!")
 
-        return output.get_intelligent_output(os.path.basename(pdf_path))
+        return output.get_intelligent_output(os.path.basename(pdf_path)), image_ocr_objects
     else:
-        return {}
+        return {}, image_ocr_objects
 
 
 

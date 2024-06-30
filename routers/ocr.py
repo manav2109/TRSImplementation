@@ -96,6 +96,7 @@ def get_image_ocr_data(image_object):
 class ocr_utility(object):
     def __init__(self, use_easy_ocr, image_path):
         self.results = None
+        self.ocr_text = []
         self.use_easy_ocr = use_easy_ocr
         self.image_path = image_path
         self.image = None
@@ -131,12 +132,11 @@ class ocr_utility(object):
         self.results = reader.readtext(self.image_rgb)
 
         # Print the results
-        texts = []
         for (bbox, text, prob) in self.results:
             # print(f'Text: {text}, Probability: {prob:.4f}')
-            texts.append(text)
+            self.ocr_text.append(text)
         # print(f"Returning {texts}")
-        return texts
+        return self.ocr_text
 
     def get_image_with_ocr_boxes(self):
         for (bbox, text, prob) in self.results:

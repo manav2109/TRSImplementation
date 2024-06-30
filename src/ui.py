@@ -124,9 +124,10 @@ class trs_ui(object):
             data, image_ocr_objects = get_gpt_extract(filename)
             image_names = []
             for each_ocr_obj in image_ocr_objects:
-                name = each_ocr_obj.get_image_name()
-                image_names.append(name)
-                self.image_vs_ocr_obj_dict[name] = each_ocr_obj
+                if len(each_ocr_obj.ocr_text) > 1:
+                    name = each_ocr_obj.get_image_name()
+                    image_names.append(name)
+                    self.image_vs_ocr_obj_dict[name] = each_ocr_obj
 
             # Update the dropdown with new image names
             self.update_options(image_names)
