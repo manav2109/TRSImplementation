@@ -284,7 +284,11 @@ class tred_json(trs_base_object):
                 if pdf_name in prev_data:
                     history_dict = prev_data.get(pdf_name)
                     for key, hist_val in history_dict.items():
-                        if key not in ['Quantitative Changes', 'Affected VBs']:
+                        if key not in ['Quantitative Changes', 'Affected VBs',
+                                       'Pre-Mod or Pre-Mod or Pre Modification or Pre-Modification',
+                                       'Post-Mod or Post-Mod or Post Modification or Post-Modification',
+                                       'Pre Mod or Pre-Modification',
+                                       'Post Mod or Post-Modification']:
                             continue
                         self.json[key] = hist_val
                         # new_val = self.json.get(key)
@@ -297,6 +301,9 @@ class tred_json(trs_base_object):
                         #     self.json[key] = new_val.append(hist_val)
                     self.json['DMU_Actions'] = history_dict['DMU_Actions']
                     self.json['Affected Part Numbers'] = history_dict['Affected Part Numbers']
+                    # Delete
+                    self.json.pop('Pre Mod or Pre-Mod or Pre Modification or Pre-Modification')
+                    self.json.pop('Post Mod or Post-Mod or Post Modification or Post-Modification')
                     return self.json
                 else:
                     return self.json
