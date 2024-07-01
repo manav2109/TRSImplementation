@@ -296,6 +296,7 @@ class tred_json(trs_base_object):
                         #     print(f"Putting History Value for key {key} new_val {new_val} hist_val {hist_val}")
                         #     self.json[key] = new_val.append(hist_val)
                     self.json['DMU_Actions'] = history_dict['DMU_Actions']
+                    self.json['Affected Part Numbers'] = history_dict['Affected Part Numbers']
                     return self.json
                 else:
                     return self.json
